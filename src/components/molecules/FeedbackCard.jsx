@@ -57,9 +57,13 @@ const FeedbackCard = ({
               {post.title}
             </h3>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <span>by {post.isAnonymous ? "Anonymous" : post.authorName}</span>
-              <span>•</span>
-              <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+<ApperIcon name="MessageSquare" size={16} />
+              <span>{post.commentsCount || 0}</span>
+              <span>
+                {post.createdAt && !isNaN(new Date(post.createdAt).getTime())
+                  ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
+                  : "Just now"}
+              </span>
             </div>
           </div>
           

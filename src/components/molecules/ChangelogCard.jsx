@@ -49,13 +49,22 @@ const ChangelogCard = ({ entry, index = 0 }) => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">
                   {entry.title}
                 </h3>
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <ApperIcon name="Calendar" className="h-4 w-4" />
-                  <span>Released {format(new Date(entry.releaseDate), "MMM d, yyyy")}</span>
-                  <span>•</span>
-                  <span>{formatDistanceToNow(new Date(entry.releaseDate), { addSuffix: true })}</span>
-                </div>
+<div className="flex items-center gap-2 text-sm text-gray-500">
+                <ApperIcon name="Calendar" size={16} />
+                  <span>
+                    Released{" "}
+                    {entry.releaseDate && !isNaN(new Date(entry.releaseDate).getTime())
+                      ? format(new Date(entry.releaseDate), "MMM d, yyyy")
+                      : "Date unavailable"}
+                  </span>
+                <span className="text-gray-300">•</span>
+                  <span>
+                    {entry.releaseDate && !isNaN(new Date(entry.releaseDate).getTime())
+                      ? formatDistanceToNow(new Date(entry.releaseDate), { addSuffix: true })
+                      : "Recently"}
+                  </span>
               </div>
+            </div>
               
               <Badge variant="success" size="md">
                 Released

@@ -1,9 +1,10 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
+import React from "react";
 import ApperIcon from "@/components/ApperIcon";
+import Badge from "@/components/atoms/Badge";
 import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
-import Badge from "@/components/atoms/Badge";
 
 const VotedPostsSidebar = ({ 
   isOpen, 
@@ -146,15 +147,20 @@ const VotedPostsSidebar = ({
                         </div>
                       </div>
 
-                      {/* Footer */}
+{/* Footer */}
                       <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
                         <div className="flex items-center space-x-4">
                           <span className="flex items-center space-x-1">
                             <ApperIcon name="MessageSquare" className="h-3 w-3" />
                             <span>{post.comments}</span>
                           </span>
-                          <span>
-                            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                          <span className="flex items-center gap-2">
+                            <ApperIcon name="Clock" size={12} />
+                            <span>
+                              {post.createdAt && !isNaN(new Date(post.createdAt).getTime())
+                                ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
+                                : "Just now"}
+                            </span>
                           </span>
                         </div>
                       </div>

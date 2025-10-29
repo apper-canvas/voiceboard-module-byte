@@ -223,9 +223,13 @@ return (
                           {post.title}
                         </h1>
                         <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-                          <span>by {post.isAnonymous ? "Anonymous" : post.authorName}</span>
-                          <span>•</span>
-                          <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+<span className="text-sm text-gray-500">{post.commentsCount || 0} comments</span>
+                          <span className="text-gray-300">•</span>
+                          <span>
+                            {post.createdAt && !isNaN(new Date(post.createdAt).getTime())
+                              ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })
+                              : "Just now"}
+                          </span>
                         </div>
                       </div>
                       
