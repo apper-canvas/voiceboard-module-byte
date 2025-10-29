@@ -34,7 +34,8 @@ const FeedbackCard = ({
     ).join(" ");
   };
 
-  const truncateText = (text, maxLength = 120) => {
+const truncateText = (text, maxLength = 120) => {
+    if (!text) return "";
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + "...";
   };
