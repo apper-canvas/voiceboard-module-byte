@@ -28,7 +28,8 @@ const FeedbackCard = ({
     }
   };
 
-  const formatStatus = (status) => {
+const formatStatus = (status) => {
+    if (!status) return "No Status";
     return status.split("-").map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(" ");
