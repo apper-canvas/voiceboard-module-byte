@@ -1,59 +1,166 @@
-import changelogData from "@/services/mockData/changelogEntries.json";
-
-let entries = [...changelogData];
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+import { getApperClient } from "@/services/apperClient";
 
 export const changelogService = {
   async getAll() {
-    await delay(300);
-    // Sort by release date, newest first
-    return entries
-      .slice()
-      .sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
+    try {
+      const apperClient = getApperClient();
+      
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "release_date_c"}},
+          {"field": {"Name": "CreatedOn"}}
+        ],
+        orderBy: [{ fieldName: "release_date_c", sorttype: "DESC" }],
+        pagingInfo: { limit: 100, offset: 0 }
+      };
+
+      const response = await apperClient.fetchRecords("changelog_entry_c", params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching changelog entries:", error?.response?.data?.message || error);
+      return [];
+    }
   },
 
   async getById(id) {
-    await delay(150);
-    const entry = entries.find(e => e.Id === parseInt(id));
-    if (!entry) {
-      throw new Error(`Changelog entry with id ${id} not found`);
+    try {
+      const apperClient = getApperClient();
+      
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "release_date_c"}},
+          {"field": {"Name": "CreatedOn"}}
+        ]
+      };
+
+      const response = await apperClient.getRecordById("changelog_entry_c", id, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(`Changelog entry with id ${id} not found`);
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching changelog entry ${id}:`, error?.response?.data?.message || error);
+      throw error;
     }
-    return { ...entry };
   },
 
   async create(entryData) {
-    await delay(400);
-    const newId = Math.max(...entries.map(e => e.Id)) + 1;
-    const newEntry = {
-      Id: newId,
-      ...entryData,
-      releaseDate: new Date().toISOString()
-    };
-    entries.unshift(newEntry); // Add to beginning for newest first
-    return { ...newEntry };
+    try {
+      const apperClient = getApperClient();
+      
+      const params = {
+        records: [
+          {
+            title_c: entryData.title_c,
+            description_c: entryData.description_c,
+            category_c: entryData.category_c,
+            release_date_c: new Date().toISOString().split('T')[0]
+          }
+        ]
+      };
+
+      const response = await apperClient.createRecord("changelog_entry_c", params);
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failed = response.results.filter(r => !r.success);
+        if (failed.length > 0) {
+          console.error(`Failed to create changelog entry: ${JSON.stringify(failed)}`);
+          throw new Error(failed[0].message || "Failed to create entry");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      console.error("Error creating changelog entry:", error?.response?.data?.message || error);
+      throw error;
+    }
   },
 
   async update(id, updateData) {
-    await delay(300);
-    const index = entries.findIndex(e => e.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error(`Changelog entry with id ${id} not found`);
+    try {
+      const apperClient = getApperClient();
+      
+      const updateFields = {
+        Id: parseInt(id)
+      };
+
+      if (updateData.title_c !== undefined) updateFields.title_c = updateData.title_c;
+      if (updateData.description_c !== undefined) updateFields.description_c = updateData.description_c;
+      if (updateData.category_c !== undefined) updateFields.category_c = updateData.category_c;
+      if (updateData.release_date_c !== undefined) updateFields.release_date_c = updateData.release_date_c;
+
+      const params = {
+        records: [updateFields]
+      };
+
+      const response = await apperClient.updateRecord("changelog_entry_c", params);
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failed = response.results.filter(r => !r.success);
+        if (failed.length > 0) {
+          console.error(`Failed to update changelog entry: ${JSON.stringify(failed)}`);
+          throw new Error(failed[0].message || "Failed to update entry");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      console.error(`Error updating changelog entry ${id}:`, error?.response?.data?.message || error);
+      throw error;
     }
-    entries[index] = {
-      ...entries[index],
-      ...updateData
-    };
-    return { ...entries[index] };
   },
 
   async delete(id) {
-    await delay(250);
-    const index = entries.findIndex(e => e.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error(`Changelog entry with id ${id} not found`);
+    try {
+      const apperClient = getApperClient();
+      
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+
+      const response = await apperClient.deleteRecord("changelog_entry_c", params);
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failed = response.results.filter(r => !r.success);
+        if (failed.length > 0) {
+          console.error(`Failed to delete changelog entry: ${JSON.stringify(failed)}`);
+          throw new Error(failed[0].message || "Failed to delete entry");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      console.error(`Error deleting changelog entry ${id}:`, error?.response?.data?.message || error);
+      throw error;
     }
-    const deleted = entries.splice(index, 1)[0];
-    return { ...deleted };
   }
 };

@@ -1,6 +1,8 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useAuth } from "@/layouts/Root";
+import { useSelector } from "react-redux";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import SubmitModal from "@/components/organisms/SubmitModal";
@@ -8,38 +10,31 @@ import SubmitModal from "@/components/organisms/SubmitModal";
 const Header = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { logout } = useAuth();
+  const { user, isAuthenticated } = useSelector(state => state.user);
   const location = useLocation();
 
   const navItems = [
-    { path: "/", label: "Feedback" },
-    { path: "/roadmap", label: "Roadmap" },
-    { path: "/changelog", label: "Changelog" },
+    { path: "/", label: "Home" },
+    { path: "/requests", label: "Requests" },
+    { path: "/about", label: "About" }
   ];
 
   const isActive = (path) => {
-    if (path === "/" && location.pathname === "/") return true;
-    if (path !== "/" && location.pathname.startsWith(path)) return true;
-    return false;
+    return location.pathname === path;
   };
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+      <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-200"></div>
-                <div className="relative bg-gradient-to-r from-primary to-purple-600 p-2 rounded-lg">
-                  <ApperIcon name="MessageSquareMore" className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                  VoiceBoard
-                </h1>
-              </div>
+            <Link to="/" className="flex items-center space-x-2">
+              <ApperIcon name="Sparkles" className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                Apper
+              </span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -48,25 +43,18 @@ const Header = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive(item.path)
                       ? "text-primary bg-primary/5"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
                 >
-                  {isActive(item.path) && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-600/5 rounded-lg border border-primary/10"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  <span className="relative">{item.label}</span>
+                  {item.label}
                 </Link>
               ))}
             </nav>
 
-            {/* Submit Button & Mobile Menu */}
+            {/* Submit Button, Logout & Mobile Menu */}
             <div className="flex items-center space-x-3">
               <Button
                 onClick={() => setIsModalOpen(true)}
@@ -77,6 +65,17 @@ const Header = () => {
                 <span className="hidden sm:inline">Submit Request</span>
                 <span className="sm:hidden">Submit</span>
               </Button>
+
+              {isAuthenticated && (
+                <Button
+                  onClick={logout}
+                  className="bg-gray-600 hover:bg-gray-700 text-white"
+                  size="sm"
+                >
+                  <ApperIcon name="LogOut" className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Logout</span>
+                </Button>
+              )}
 
               {/* Mobile Menu Button */}
               <button

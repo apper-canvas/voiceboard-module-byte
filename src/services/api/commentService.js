@@ -1,104 +1,300 @@
-import commentsData from "@/services/mockData/comments.json";
-
-let comments = [...commentsData];
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+import { getApperClient } from "@/services/apperClient";
 
 export const commentService = {
   async getByPostId(postId) {
-    await delay(250);
-    const postComments = comments.filter(c => c.postId === String(postId));
-    
-    // Sort comments by creation date (newest first for top-level, oldest first for replies)
-    const topLevel = postComments
-      .filter(c => !c.parentId)
-      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    
-    const withReplies = topLevel.map(comment => {
-      const replies = postComments
-        .filter(c => c.parentId === String(comment.Id))
-        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    try {
+      const apperClient = getApperClient();
       
-      return {
-        ...comment,
-        replies
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "post_id_c"}},
+          {"field": {"Name": "parent_id_c"}},
+          {"field": {"Name": "author_name_c"}},
+          {"field": {"Name": "content_c"}},
+          {"field": {"Name": "is_anonymous_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "CreatedOn"}}
+        ],
+        where: [
+          {
+            FieldName: "post_id_c",
+            Operator: "EqualTo",
+            Values: [String(postId)]
+          }
+        ],
+        orderBy: [{ fieldName: "CreatedOn", sorttype: "ASC" }],
+        pagingInfo: { limit: 200, offset: 0 }
       };
-    });
-    
-    return withReplies;
-  },
 
-async create(commentData) {
-    await delay(300);
-    const newId = Math.max(...comments.map(c => c.Id)) + 1;
-    const newComment = {
-      Id: newId,
-      ...commentData,
-      images: commentData.images || [],
-      createdAt: new Date().toISOString()
-    };
-    comments.push(newComment);
-    return { ...newComment };
-  },
+      const response = await apperClient.fetchRecords("comment_c", params);
 
-  async getAll() {
-    await delay(200);
-    return comments.map(c => ({ ...c }));
-  },
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
 
-  async getById(id) {
-    await delay(150);
-    const comment = comments.find(c => c.Id === parseInt(id));
-    if (!comment) {
-      throw new Error(`Comment with id ${id} not found`);
+      const allComments = response.data.map(c => ({
+        ...c,
+        images_c: c.images_c ? JSON.parse(c.images_c) : []
+      }));
+
+      const topLevel = allComments.filter(c => !c.parent_id_c);
+      
+      const withReplies = topLevel.map(comment => {
+        const replies = allComments
+          .filter(c => c.parent_id_c === String(comment.Id))
+          .sort((a, b) => new Date(a.CreatedOn) - new Date(b.CreatedOn));
+        
+        return {
+          ...comment,
+          replies
+        };
+      });
+      
+      return withReplies;
+    } catch (error) {
+      console.error("Error fetching comments:", error?.response?.data?.message || error);
+      return [];
     }
-    return { ...comment };
-  },
-
-async update(id, updateData) {
-    await delay(250);
-    const index = comments.findIndex(c => c.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error(`Comment with id ${id} not found`);
-    }
-    comments[index] = {
-      ...comments[index],
-      ...updateData,
-      images: updateData.images !== undefined ? updateData.images : comments[index].images
-    };
-    return { ...comments[index] };
-  },
-
-  async delete(id) {
-    await delay(200);
-    const index = comments.findIndex(c => c.Id === parseInt(id));
-    if (index === -1) {
-      throw new Error(`Comment with id ${id} not found`);
-    }
-const deleted = comments.splice(index, 1)[0];
-    return { ...deleted };
   },
 
   async getByRoadmapItemId(roadmapItemId) {
-    await delay(250);
-    const itemComments = comments.filter(c => c.roadmapItemId === String(roadmapItemId));
-    
-    // Sort comments by creation date (oldest first for top-level)
-    const topLevel = itemComments
-      .filter(c => !c.parentId)
-      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    
-    const withReplies = topLevel.map(comment => {
-      const replies = itemComments
-        .filter(c => c.parentId === String(comment.Id))
-        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    try {
+      const apperClient = getApperClient();
       
-      return {
-        ...comment,
-        replies
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "post_id_c"}},
+          {"field": {"Name": "parent_id_c"}},
+          {"field": {"Name": "author_name_c"}},
+          {"field": {"Name": "content_c"}},
+          {"field": {"Name": "is_anonymous_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "CreatedOn"}}
+        ],
+        where: [
+          {
+            FieldName: "post_id_c",
+            Operator: "EqualTo",
+            Values: [String(roadmapItemId)]
+          }
+        ],
+        orderBy: [{ fieldName: "CreatedOn", sorttype: "ASC" }],
+        pagingInfo: { limit: 200, offset: 0 }
       };
-    });
-    
-    return withReplies;
+
+      const response = await apperClient.fetchRecords("comment_c", params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      const allComments = response.data.map(c => ({
+        ...c,
+        images_c: c.images_c ? JSON.parse(c.images_c) : []
+      }));
+
+      const topLevel = allComments.filter(c => !c.parent_id_c);
+      
+      const withReplies = topLevel.map(comment => {
+        const replies = allComments
+          .filter(c => c.parent_id_c === String(comment.Id))
+          .sort((a, b) => new Date(a.CreatedOn) - new Date(b.CreatedOn));
+        
+        return {
+          ...comment,
+          replies
+        };
+      });
+      
+      return withReplies;
+    } catch (error) {
+      console.error("Error fetching roadmap comments:", error?.response?.data?.message || error);
+      return [];
+    }
+  },
+
+  async create(commentData) {
+    try {
+      const apperClient = getApperClient();
+      
+      const params = {
+        records: [
+          {
+            post_id_c: String(commentData.post_id_c || commentData.postId),
+            parent_id_c: commentData.parent_id_c ? String(commentData.parent_id_c) : null,
+            author_name_c: commentData.author_name_c || commentData.authorName || "Anonymous",
+            content_c: commentData.content_c || commentData.content,
+            is_anonymous_c: commentData.is_anonymous_c || commentData.isAnonymous || false,
+            images_c: commentData.images_c ? JSON.stringify(commentData.images_c) : (commentData.images ? JSON.stringify(commentData.images) : "[]")
+          }
+        ]
+      };
+
+      const response = await apperClient.createRecord("comment_c", params);
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failed = response.results.filter(r => !r.success);
+        if (failed.length > 0) {
+          console.error(`Failed to create comment: ${JSON.stringify(failed)}`);
+          throw new Error(failed[0].message || "Failed to create comment");
+        }
+        return {
+          ...response.results[0].data,
+          images_c: response.results[0].data.images_c ? JSON.parse(response.results[0].data.images_c) : []
+        };
+      }
+    } catch (error) {
+      console.error("Error creating comment:", error?.response?.data?.message || error);
+      throw error;
+    }
+  },
+
+  async getAll() {
+    try {
+      const apperClient = getApperClient();
+      
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "post_id_c"}},
+          {"field": {"Name": "parent_id_c"}},
+          {"field": {"Name": "author_name_c"}},
+          {"field": {"Name": "content_c"}},
+          {"field": {"Name": "is_anonymous_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "CreatedOn"}}
+        ],
+        orderBy: [{ fieldName: "CreatedOn", sorttype: "DESC" }],
+        pagingInfo: { limit: 500, offset: 0 }
+      };
+
+      const response = await apperClient.fetchRecords("comment_c", params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      return response.data.map(c => ({
+        ...c,
+        images_c: c.images_c ? JSON.parse(c.images_c) : []
+      }));
+    } catch (error) {
+      console.error("Error fetching all comments:", error?.response?.data?.message || error);
+      return [];
+    }
+  },
+
+  async getById(id) {
+    try {
+      const apperClient = getApperClient();
+      
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "post_id_c"}},
+          {"field": {"Name": "parent_id_c"}},
+          {"field": {"Name": "author_name_c"}},
+          {"field": {"Name": "content_c"}},
+          {"field": {"Name": "is_anonymous_c"}},
+          {"field": {"Name": "images_c"}},
+          {"field": {"Name": "CreatedOn"}}
+        ]
+      };
+
+      const response = await apperClient.getRecordById("comment_c", id, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(`Comment with id ${id} not found`);
+      }
+
+      return {
+        ...response.data,
+        images_c: response.data.images_c ? JSON.parse(response.data.images_c) : []
+      };
+    } catch (error) {
+      console.error(`Error fetching comment ${id}:`, error?.response?.data?.message || error);
+      throw error;
+    }
+  },
+
+  async update(id, updateData) {
+    try {
+      const apperClient = getApperClient();
+      
+      const updateFields = {
+        Id: parseInt(id)
+      };
+
+      if (updateData.content_c !== undefined) updateFields.content_c = updateData.content_c;
+      if (updateData.images_c !== undefined) {
+        updateFields.images_c = JSON.stringify(updateData.images_c);
+      }
+
+      const params = {
+        records: [updateFields]
+      };
+
+      const response = await apperClient.updateRecord("comment_c", params);
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failed = response.results.filter(r => !r.success);
+        if (failed.length > 0) {
+          console.error(`Failed to update comment: ${JSON.stringify(failed)}`);
+          throw new Error(failed[0].message || "Failed to update comment");
+        }
+        return {
+          ...response.results[0].data,
+          images_c: response.results[0].data.images_c ? JSON.parse(response.results[0].data.images_c) : []
+        };
+      }
+    } catch (error) {
+      console.error(`Error updating comment ${id}:`, error?.response?.data?.message || error);
+      throw error;
+    }
+  },
+
+  async delete(id) {
+    try {
+      const apperClient = getApperClient();
+      
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+
+      const response = await apperClient.deleteRecord("comment_c", params);
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results) {
+        const failed = response.results.filter(r => !r.success);
+        if (failed.length > 0) {
+          console.error(`Failed to delete comment: ${JSON.stringify(failed)}`);
+          throw new Error(failed[0].message || "Failed to delete comment");
+        }
+        return response.results[0].data;
+      }
+    } catch (error) {
+      console.error(`Error deleting comment ${id}:`, error?.response?.data?.message || error);
+      throw error;
+    }
   }
 };
