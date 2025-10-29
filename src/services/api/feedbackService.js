@@ -257,5 +257,31 @@ export const feedbackService = {
       console.error(`Error deleting post ${id}:`, error?.response?.data?.message || error);
       throw error;
     }
+},
+
+  /**
+   * Get posts that the current user has voted on
+   * Reads from localStorage to determine which posts have been voted on
+   * @returns {Promise<Array>} Array of posts the user has voted on
+   */
+  getVotedPosts: async () => {
+    try {
+      // Get voted post IDs from localStorage
+      const votedPostIds = JSON.parse(localStorage.getItem("votedPosts") || "[]");
+      
+      // If no votes, return empty array
+      if (votedPostIds.length === 0) {
+        return [];
+      }
+      
+      // Fetch all posts and filter to only voted ones
+      const allPosts = await feedbackService.getAll();
+      const votedPosts = allPosts.filter(post => votedPostIds.includes(post.Id));
+      
+      return votedPosts;
+    } catch (error) {
+      console.error("Error fetching voted posts:", error);
+      return [];
+    }
   }
 };
